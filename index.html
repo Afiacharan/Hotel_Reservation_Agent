@@ -908,214 +908,299 @@
         </div>
     </div>
 
-   <script>
-    const WEBHOOK_URL = 'https://n8n.srv1002302.hstgr.cloud/webhook-test/audiotest';
-    let sessionId = generateSessionId();
-    let isRecording = false;
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let selectedImage = null;
+  <script>
+      const WEBHOOK_URL = 'https://n8n.srv1002302.hstgr.cloud/webhook-test/audiotest';
+let sessionId = generateSessionId();
+let isRecording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+let selectedImage = null;
 
-    const emojis = ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','👍','👎','👌','✌️','🤞','🤟','🤘','🤙','👏','🙌','👐','🤲','🤝','🙏','❤️','🧡','💛','💚','💙','💜','🤎','🖤','🤍','💯','💢','💥','💫','💦','💨','🕊️','🦋','🌸','🌺','🌻','🌷','🌹','🥀','🌼','⭐','🌟','✨','⚡','🔥','💧','🌊','🎉','🎊','🎈','🎁','🏆','🥇','🥈','🥉','⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸','🥊','🥋','⛳','⛸️','🎣','🤿','🎿','🛷','🥌','🎯','🎮','🕹️','🎲','♠️','♥️','♦️','♣️','🃏','🀄','🎴','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎺','🎸','🪕','🎻','🎲','♟️','🎳','🎮','🎰'];
+const emojis = ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','👍','👎','👌','✌️','🤞','🤟','🤘','🤙','👏','🙌','👐','🤲','🤝','🙏','❤️','🧡','💛','💚','💙','💜','🤎','🖤','🤍','💯','💢','💥','💫','💦','💨','🕊️','🦋','🌸','🌺','🌻','🌷','🌹','🥀','🌼','⭐','🌟','✨','⚡','🔥','💧','🌊','🎉','🎊','🎈','🎁','🏆','🥇','🥈','🥉','⚽','🏀','🏈','⚾','🎾','🏐','🏉','🎱','🏓','🏸','🥊','🥋','⛳','⛸️','🎣','🤿','🎿','🛷','🥌','🎯','🎮','🕹️','🎲','♠️','♥️','♦️','♣️','🃏','🀄','🎴','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎺','🎸','🪕','🎻','🎲','♟️','🎳','🎮','🎰'];
 
-    // Initialize emoji picker
-    function initEmojiPicker() {
-        const emojiGrid = document.getElementById('emojiGrid');
-        emojis.forEach(emoji => {
-            const emojiItem = document.createElement('div');
-            emojiItem.className = 'emoji-item';
-            emojiItem.textContent = emoji;
-            emojiItem.onclick = () => insertEmoji(emoji);
-            emojiGrid.appendChild(emojiItem);
-        });
-    }
+// Initialize emoji picker
+function initEmojiPicker() {
+    const emojiGrid = document.getElementById('emojiGrid');
+    emojis.forEach(emoji => {
+        const emojiItem = document.createElement('div');
+        emojiItem.className = 'emoji-item';
+        emojiItem.textContent = emoji;
+        emojiItem.onclick = () => insertEmoji(emoji);
+        emojiGrid.appendChild(emojiItem);
+    });
+}
 
-    function toggleEmojiPicker() {
-        const picker = document.getElementById('emojiPicker');
-        picker.classList.toggle('active');
-    }
+function toggleEmojiPicker() {
+    const picker = document.getElementById('emojiPicker');
+    picker.classList.toggle('active');
+}
 
-    function insertEmoji(emoji) {
-        const input = document.getElementById('messageInput');
-        input.value += emoji;
-        input.focus();
-    }
+function insertEmoji(emoji) {
+    const input = document.getElementById('messageInput');
+    input.value += emoji;
+    input.focus();
+}
 
-    function showNotification(message, type = 'info') {
-        const notification = document.getElementById('notification');
-        const notificationText = document.getElementById('notificationText');
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notificationText');
+    
+    notification.className = `notification ${type} active`;
+    notificationText.textContent = message;
+    
+    setTimeout(() => {
+        notification.classList.remove('active');
+    }, 3000);
+}
+
+function generateSessionId() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function handleKeyPress(event) {
+    if (event.key === 'Enter') sendMessage();
+}
+
+function sendQuickMessage(message) {
+    document.getElementById('messageInput').value = message;
+    sendMessage();
+}
+
+// Send Text or Image Message
+async function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+
+    if (!message && !selectedImage) return;
+
+    // Hide welcome message
+    const welcomeMsg = document.querySelector('.welcome-message');
+    if (welcomeMsg) welcomeMsg.style.display = 'none';
+
+    if (message) addMessage(message, 'user');
+    if (selectedImage) addImageMessage(selectedImage, 'user');
+
+    input.value = '';
+    showTypingIndicator();
+
+    try {
+        const formData = new FormData();
         
-        notification.className = `notification ${type} active`;
-        notificationText.textContent = message;
-        
-        setTimeout(() => {
-            notification.classList.remove('active');
-        }, 3000);
-    }
-
-    function generateSessionId() {
-        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    }
-
-    function handleKeyPress(event) {
-        if (event.key === 'Enter') sendMessage();
-    }
-
-    function sendQuickMessage(message) {
-        document.getElementById('messageInput').value = message;
-        sendMessage();
-    }
-
-    async function sendMessage() {
-        const input = document.getElementById('messageInput');
-        const message = input.value.trim();
-
-        if (!message && !selectedImage) return;
-
-        // Hide welcome message
-        const welcomeMsg = document.querySelector('.welcome-message');
-        if (welcomeMsg) welcomeMsg.style.display = 'none';
-
-        if (message) addMessage(message, 'user');
-        if (selectedImage) addImageMessage(selectedImage, 'user');
-
-        input.value = '';
-        showTypingIndicator();
-
-        try {
-            const formData = new FormData();
-            
-            if (selectedImage) {
-                formData.append('image', selectedImage);
-                formData.append('type', 'image');
-            } else {
-                formData.append('type', 'text');
-            }
-
-            formData.append('message', message);
-            formData.append('sessionId', sessionId);
-
-            const response = await fetch(WEBHOOK_URL, { method: 'POST', body: formData });
-            const data = await response.json();
-            hideTypingIndicator();
-
-            if (data.output) addMessage(data.output, 'bot');
-
-            selectedImage = null;
-            const previewArea = document.getElementById('previewArea');
-            previewArea.classList.remove('active');
-            previewArea.innerHTML = '';
-
-        } catch (error) {
-            hideTypingIndicator();
-            addMessage('Sorry, there was an error processing your request.', 'bot');
-            console.error('Error:', error);
+        if (selectedImage) {
+            formData.append('image', selectedImage);
+            formData.append('type', 'image');
+        } else {
+            formData.append('type', 'text');
         }
+
+        formData.append('message', message);
+        formData.append('sessionId', sessionId);
+
+        const response = await fetch(WEBHOOK_URL, { method: 'POST', body: formData });
+        const data = await response.json();
+        hideTypingIndicator();
+
+        if (data.output) addMessage(data.output, 'bot');
+
+        selectedImage = null;
+        const previewArea = document.getElementById('previewArea');
+        previewArea.classList.remove('active');
+        previewArea.innerHTML = '';
+
+    } catch (error) {
+        hideTypingIndicator();
+        addMessage('Sorry, there was an error processing your request.', 'bot');
+        console.error('Error:', error);
+    }
+}
+
+// Add text message to chat
+function addMessage(text, sender) {
+    const messagesDiv = document.getElementById('messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.innerHTML = text.replace(/\n/g, '<br>');
+
+    const timestamp = document.createElement('div');
+    timestamp.className = 'timestamp';
+    timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    content.appendChild(timestamp);
+
+    // Bot message actions
+    if (sender === 'bot') {
+        const actions = document.createElement('div');
+        actions.className = 'message-actions';
+        actions.innerHTML = `
+            <button class="message-action-btn" onclick="copyMessage(this)" title="Copy">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button class="message-action-btn" onclick="speakMessage(this)" title="Read aloud">
+                <i class="fas fa-volume-up"></i>
+            </button>
+        `;
+        content.appendChild(actions);
     }
 
-    function addMessage(text, sender) {
-        const messagesDiv = document.getElementById('messages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}`;
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(content);
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
-        const avatar = document.createElement('div');
-        avatar.className = 'message-avatar';
-        avatar.innerHTML = sender === 'user' ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+// Add image message to chat
+function addImageMessage(file, sender) {
+    const messagesDiv = document.getElementById('messages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
 
-        const content = document.createElement('div');
-        content.className = 'message-content';
-        content.innerHTML = text.replace(/\n/g, '<br>');
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.innerHTML = '<i class="fas fa-user"></i>';
 
+    const content = document.createElement('div');
+    content.className = 'message-content';
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        content.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; border-radius: 8px;">`;
         const timestamp = document.createElement('div');
         timestamp.className = 'timestamp';
         timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         content.appendChild(timestamp);
+    };
+    reader.readAsDataURL(file);
 
-        // Bot message actions
-        if (sender === 'bot') {
-            const actions = document.createElement('div');
-            actions.className = 'message-actions';
-            actions.innerHTML = `
-                <button class="message-action-btn" onclick="copyMessage(this)" title="Copy">
-                    <i class="fas fa-copy"></i>
-                </button>
-                <button class="message-action-btn" onclick="speakMessage(this)" title="Read aloud">
-                    <i class="fas fa-volume-up"></i>
-                </button>
-            `;
-            content.appendChild(actions);
-        }
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(content);
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
-        messageDiv.appendChild(avatar);
-        messageDiv.appendChild(content);
-        messagesDiv.appendChild(messageDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+// Handle image selection
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        showNotification('Please select an image file', 'error');
+        return;
     }
 
-    function addImageMessage(file, sender) {
-        const messagesDiv = document.getElementById('messages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}`;
+    selectedImage = file;
 
-        const avatar = document.createElement('div');
-        avatar.className = 'message-avatar';
-        avatar.innerHTML = '<i class="fas fa-user"></i>';
+    const previewArea = document.getElementById('previewArea');
+    previewArea.innerHTML = `
+        <div class="preview-item">
+            <img src="${URL.createObjectURL(file)}" alt="preview">
+            <button class="remove-btn" onclick="removeSelectedImage()">×</button>
+        </div>
+    `;
+    previewArea.classList.add('active');
+}
 
-        const content = document.createElement('div');
-        content.className = 'message-content';
+function removeSelectedImage() {
+    selectedImage = null;
+    const previewArea = document.getElementById('previewArea');
+    previewArea.classList.remove('active');
+    previewArea.innerHTML = '';
+}
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            content.innerHTML = `<img src="${e.target.result}" style="max-width: 100%; border-radius: 8px;">`;
-            const timestamp = document.createElement('div');
-            timestamp.className = 'timestamp';
-            timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            content.appendChild(timestamp);
-        };
-        reader.readAsDataURL(file);
+// Copy message text
+function copyMessage(btn) {
+    const messageContent = btn.closest('.message-content');
+    const text = messageContent.childNodes[0].textContent;
+    navigator.clipboard.writeText(text).then(() => showNotification('Message copied!', 'success'));
+}
 
-        messageDiv.appendChild(avatar);
-        messageDiv.appendChild(content);
-        messagesDiv.appendChild(messageDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+// Read message aloud
+function speakMessage(btn) {
+    const messageContent = btn.closest('.message-content');
+    const text = messageContent.childNodes[0].textContent;
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+        showNotification('Reading message...', 'info');
+    } else {
+        showNotification('Text-to-speech not supported', 'error');
+    }
+}
+
+// Typing indicator
+function showTypingIndicator() {
+    document.getElementById('typingIndicator').classList.add('active');
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+function hideTypingIndicator() {
+    document.getElementById('typingIndicator').classList.remove('active');
+}
+
+// Voice recording
+function toggleRecording() {
+    const micBtn = document.getElementById('micBtn');
+    const audioVisualizer = document.getElementById('audioVisualizer');
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showNotification('Microphone not supported', 'error');
+        return;
     }
 
-    function copyMessage(btn) {
-        const messageContent = btn.closest('.message-content');
-        const text = messageContent.childNodes[0].textContent;
-        navigator.clipboard.writeText(text).then(() => showNotification('Message copied!', 'success'));
+    if (!isRecording) {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                
+                const formData = new FormData();
+                formData.append('audio', audioBlob);
+                formData.append('type', 'audio');
+                formData.append('sessionId', sessionId);
+
+                try {
+                    showTypingIndicator();
+                    const response = await fetch(WEBHOOK_URL, { method: 'POST', body: formData });
+                    const data = await response.json();
+                    hideTypingIndicator();
+                    if (data.output) addMessage(data.output, 'bot');
+                } catch (err) {
+                    hideTypingIndicator();
+                    addMessage('Error sending audio.', 'bot');
+                    console.error(err);
+                }
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            micBtn.classList.add('recording');
+            audioVisualizer.classList.add('active');
+        }).catch(err => showNotification('Microphone access denied', 'error'));
+    } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        micBtn.classList.remove('recording');
+        audioVisualizer.classList.remove('active');
     }
+}
 
-    function speakMessage(btn) {
-        const messageContent = btn.closest('.message-content');
-        const text = messageContent.childNodes[0].textContent;
+// Initialize emoji picker on page load
+window.addEventListener('DOMContentLoaded', () => initEmojiPicker());
 
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
-            showNotification('Reading message...', 'info');
-        } else {
-            showNotification('Text-to-speech not supported', 'error');
-        }
-    }
-
-    function showTypingIndicator() {
-        document.getElementById('typingIndicator').classList.add('active');
-        const messagesDiv = document.getElementById('messages');
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    function hideTypingIndicator() {
-        document.getElementById('typingIndicator').classList.remove('active');
-    }
-
-    // Initialize emoji picker
-    window.addEventListener('DOMContentLoaded', () => initEmojiPicker());
-</script>
-
+  </script>
 </body>
 
 </html>
+
 
