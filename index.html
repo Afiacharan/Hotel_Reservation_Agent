@@ -1334,6 +1334,18 @@
         function hideTypingIndicator() {
             document.getElementById('typingIndicator').classList.remove('active');
         }
+        function showAIOutput(responseText) {
+    const chatBody = document.getElementById("chat-body");
+
+    const botMessage = document.createElement("div");
+    botMessage.className = "message bot";
+    botMessage.textContent = responseText;
+
+    chatBody.appendChild(botMessage);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
     </script>
 </body>
+
 </html>
